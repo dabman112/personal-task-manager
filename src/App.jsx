@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import React, { useContext } from "react";
+import TaskForm from "./TaskForm";
+import useTasks from "./useTasks";
+import { ThemeContext } from "./ThemeContext";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { tasks, setTasks } = useTasks();
+
+  const addTask = (task) => {
+    setTasks([...tasks, task]);
+  };
+
+  const toggleDone = (id) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, done: !task.done } : task
+      )
+    );
+  };
+
+  const deleteTask = (id) => {
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className={`app-container ${theme}`}>
+      <header>
+        <h1>🧠 Personal Task Manager</h1>
+        <button onClick={toggleTheme} className="theme-btn">
+          Switch to {theme === "light" ? "Dark" : "Light"} Mode
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      </header>
+
+      <TaskForm onAddTask={addTask} />
+
+      <div className="task-list">
+        {tasks.length === 0 ? (
+          <p className="empty">No tasks yet. Add one!</p>
+        ) : (
+          tasks.map((task) => (
+            <div key={task.id} className={`task-card ${task.done ? "done" : ""}`}>
+              <h3>{task.title}</h3>
+              <p>{task.description}</p>
+              <span className={`priority ${task.priority.toLowerCase()}`}>
+                {task.priority}
+              </span>
+              <div className="actions">
+                <button onClick={() => toggleDone(task.id)}>
+                  {task.done ? "Undo" : "Done"}
+                </button>
+                <button onClick={() => deleteTask(task.id)}>Delete</button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
